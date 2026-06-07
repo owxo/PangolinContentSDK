@@ -1,0 +1,90 @@
+group = "com.owxo.pangolin_content_sdk"
+version = "1.0-SNAPSHOT"
+
+buildscript {
+    ext.kotlin_version = "2.2.20"
+    repositories {
+        maven { url "https://maven.aliyun.com/repository/google/" }
+        maven { url "https://maven.aliyun.com/repository/public/" }
+        google()
+        mavenCentral()
+        maven { url "https://artifact.bytedance.com/repository/Volcengine/" }
+        maven { url "https://artifact.bytedance.com/repository/pangle/" }
+    }
+
+    dependencies {
+        classpath("com.android.tools.build:gradle:8.11.1")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
+    }
+}
+
+allprojects {
+    repositories {
+        maven { url "https://maven.aliyun.com/repository/google/" }
+        maven { url "https://maven.aliyun.com/repository/public/" }
+        google()
+        mavenCentral()
+        maven { url "https://artifact.bytedance.com/repository/Volcengine/" }
+        maven { url "https://artifact.bytedance.com/repository/pangle/" }
+    }
+}
+
+apply plugin: "com.android.library"
+apply plugin: "kotlin-android"
+
+android {
+    namespace = "com.owxo.pangolin_content_sdk"
+
+    compileSdk = 36
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_17
+    }
+
+    sourceSets {
+        main.java.srcDirs += "src/main/kotlin"
+        test.java.srcDirs += "src/test/kotlin"
+    }
+
+    defaultConfig {
+        minSdk = 21
+        manifestPlaceholders = [
+            APPLOG_SCHEME: project.findProperty("pangolinAppLogScheme") ?: "rangersapplog.pangolincontentsdk"
+        ]
+    }
+
+    dependencies {
+        def pangolinAdSdk = project.findProperty("pangolinAdSdk") ?: "com.pangle.cn:mediation-sdk:5.9.0.8"
+        def pangolinDramaSdk = project.findProperty("pangolinDramaSdk") ?: "com.pangle.cn:pangrowth-djx-sdk-lite:2.9.0.9"
+        def pangolinBaseSdk = project.findProperty("pangolinBaseSdk") ?: "com.pangle.cn:pangrowth-base:2.9.0.9"
+        def pangolinOkHttp = project.findProperty("pangolinOkHttp") ?: "com.squareup.okhttp3:okhttp:4.12.0"
+
+        implementation(pangolinAdSdk)
+        implementation(pangolinDramaSdk)
+        implementation(pangolinBaseSdk)
+        // Pangolin's VOD runtime reflects legacy ExoPlayer classes during player initialization.
+        implementation("com.google.android.exoplayer:exoplayer-core:2.19.1")
+        // Pangolin's VOD network layer references okhttp3.MediaType at runtime.
+        implementation(pangolinOkHttp)
+        implementation("androidx.fragment:fragment-ktx:1.8.9")
+        testImplementation("org.jetbrains.kotlin:kotlin-test")
+        testImplementation("org.mockito:mockito-core:5.0.0")
+    }
+
+    testOptions {
+        unitTests.all {
+            useJUnitPlatform()
+
+            testLogging {
+               events "passed", "skipped", "failed", "standardOut", "standardError"
+               outputs.upToDateWhen {false}
+               showStandardStreams = true
+            }
+        }
+    }
+}
