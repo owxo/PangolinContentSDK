@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'pangolin_content_sdk_platform_interface.dart';
 import 'src/pangolin_content_models.dart';
 
-/// MethodChannel implementation for Android.
+/// MethodChannel implementation shared by Android and iOS.
 class MethodChannelPangolinContentSdk extends PangolinContentSdkPlatform {
   @visibleForTesting
   final methodChannel = const MethodChannel('pangolin_content_sdk');
@@ -30,10 +30,21 @@ class MethodChannelPangolinContentSdk extends PangolinContentSdkPlatform {
 
   @override
   Future<Map<String, bool>> requestRecommendedPermissions() async {
-    final map = await methodChannel.invokeMapMethod<String, bool>(
+    final map = await methodChannel.invokeMapMethod<Object?, Object?>(
       'requestRecommendedPermissions',
     );
-    return map ?? const <String, bool>{};
+    if (map == null) {
+      return const <String, bool>{};
+    }
+    return <String, bool>{
+      for (final entry in map.entries)
+        entry.key.toString(): switch (entry.value) {
+          final bool value => value,
+          final num value => value != 0,
+          final String value => value.toLowerCase() == 'true' || value == '1',
+          _ => false,
+        },
+    };
   }
 
   @override
@@ -240,6 +251,16 @@ class MethodChannelPangolinContentSdk extends PangolinContentSdkPlatform {
       'openDramaDrawFeed',
       <String, Object?>{'options': options.toMap()},
     );
+  }
+
+  @override
+  Future<void> pauseEmbeddedDramaDrawFeed() {
+    return methodChannel.invokeMethod<void>('pauseEmbeddedDramaDrawFeed');
+  }
+
+  @override
+  Future<void> resumeEmbeddedDramaDrawFeed() {
+    return methodChannel.invokeMethod<void>('resumeEmbeddedDramaDrawFeed');
   }
 
   Future<List<PangolinDrama>> _requestDramaList(

@@ -1,3 +1,10 @@
+## 1.0.1
+
+* 增加 iOS 短剧内容 SDK 支持。
+* iOS 支持 SDK 初始化、短剧列表/分类/搜索/历史/收藏、打开原生短剧播放页、打开溜溜滑/滑滑流页面。
+* iOS 支持内嵌 `PangolinDramaDrawFeedView` 和第三方激励广告回调。
+* 初始化时增加 iOS SDK 配置 JSON 的 AppID、site_id、Bundle ID 校验提示。
+
 ## 1.0.0
 
 * 首个可公开接入版本。

@@ -153,4 +153,16 @@ abstract class PangolinContentSdkPlatform extends PlatformInterface {
   Future<void> openDramaDrawFeed({required PangolinDramaDrawOptions options}) {
     throw UnimplementedError('openDramaDrawFeed() has not been implemented.');
   }
+
+  Future<void> pauseEmbeddedDramaDrawFeed() {
+    throw UnimplementedError(
+      'pauseEmbeddedDramaDrawFeed() has not been implemented.',
+    );
+  }
+
+  Future<void> resumeEmbeddedDramaDrawFeed() {
+    throw UnimplementedError(
+      'resumeEmbeddedDramaDrawFeed() has not been implemented.',
+    );
+  }
 }

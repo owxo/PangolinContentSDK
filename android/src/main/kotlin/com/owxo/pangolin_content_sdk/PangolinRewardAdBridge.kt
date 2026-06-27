@@ -1,7 +1,12 @@
 package com.owxo.pangolin_content_sdk
 
+import android.app.Activity
+import android.app.AlertDialog
+import android.content.Context
+import android.content.ContextWrapper
 import android.os.Handler
 import android.os.Looper
+import android.widget.Toast
 import com.bytedance.sdk.djx.DJXRewardAdResult
 import com.bytedance.sdk.djx.interfaces.listener.IDJXDramaUnlockListener
 import com.bytedance.sdk.djx.model.DJXDrama
@@ -26,6 +31,7 @@ object PangolinRewardAdBridge {
         scene: String,
         drama: DJXDrama,
         callback: IDJXDramaUnlockListener.CustomAdCallback,
+        context: Context? = null,
     ) {
         val activeChannel = channel
         if (activeChannel == null) {
@@ -49,7 +55,7 @@ object PangolinRewardAdBridge {
                 arguments,
                 object : MethodChannel.Result {
                     override fun success(result: Any?) {
-                        handleRewardResult(result, callback)
+                        handleRewardResult(result, callback, context)
                     }
 
                     override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {
@@ -67,15 +73,18 @@ object PangolinRewardAdBridge {
     private fun handleRewardResult(
         result: Any?,
         callback: IDJXDramaUnlockListener.CustomAdCallback,
+        context: Context?,
     ) {
         val resultMap = result as? Map<*, *>
         val shown = resultMap.boolean("shown", defaultValue = false)
         val rewarded = resultMap.boolean("rewarded", defaultValue = false)
         val ecpm = resultMap.string("ecpm").orEmpty()
+        val errorMessage = resultMap.string("errorMessage").orEmpty()
         val extra = resultMap.map("extra").toStringMap()
 
         mainHandler.post {
             if (!shown) {
+                showUnavailableMessage(context, errorMessage)
                 callback.onError()
                 return@post
             }
@@ -100,6 +109,29 @@ object PangolinRewardAdBridge {
 
     private fun Map<*, *>?.map(key: String): Map<*, *>? {
         return this?.get(key) as? Map<*, *>
+    }
+
+    private fun showUnavailableMessage(context: Context?, errorMessage: String) {
+        val message = errorMessage.ifBlank { "歇歇吧，广告太忙了" }
+        val activity = context?.ownerActivity()
+        if (activity == null || activity.isFinishing || activity.isDestroyed) {
+            context?.applicationContext?.let {
+                Toast.makeText(it, message, Toast.LENGTH_SHORT).show()
+            }
+            return
+        }
+        AlertDialog.Builder(activity)
+            .setMessage(message)
+            .setPositiveButton("知道了", null)
+            .show()
+    }
+
+    private tailrec fun Context.ownerActivity(): Activity? {
+        return when (this) {
+            is Activity -> this
+            is ContextWrapper -> baseContext.ownerActivity()
+            else -> null
+        }
     }
 
     private fun Map<*, *>?.toStringMap(): Map<String, Any> {

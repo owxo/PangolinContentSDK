@@ -94,7 +94,7 @@ class PangolinDramaDetailActivity : FragmentActivity() {
             infiniteScrollEnabled(intent.getBooleanExtra(EXTRA_ENABLE_INFINITE_SCROLL, true))
             hideLikeButton(intent.getBooleanExtra(EXTRA_HIDE_LIKE_BUTTON, false))
             hideFavorButton(intent.getBooleanExtra(EXTRA_HIDE_FAVOR_BUTTON, false))
-            hideRewardDialog(intent.getBooleanExtra(EXTRA_HIDE_REWARD_DIALOG, false))
+            hideRewardDialog(useCustomRewardAd || intent.getBooleanExtra(EXTRA_HIDE_REWARD_DIALOG, false))
             hideBack(intent.getBooleanExtra(EXTRA_HIDE_BACK, false), View.OnClickListener { finish() })
             hideTopInfo(intent.getBooleanExtra(EXTRA_HIDE_TOP_INFO, false))
             hideBottomInfo(intent.getBooleanExtra(EXTRA_HIDE_BOTTOM_INFO, false))
@@ -158,7 +158,12 @@ class PangolinDramaDetailActivity : FragmentActivity() {
                     drama: DJXDrama,
                     callback: IDJXDramaUnlockListener.CustomAdCallback,
                 ) {
-                    PangolinRewardAdBridge.requestRewardAd("detail", drama, callback)
+                    PangolinRewardAdBridge.requestRewardAd(
+                        "detail",
+                        drama,
+                        callback,
+                        this@PangolinDramaDetailActivity,
+                    )
                 }
             }
         }

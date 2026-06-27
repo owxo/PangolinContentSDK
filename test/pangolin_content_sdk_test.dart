@@ -168,6 +168,12 @@ class MockPangolinContentSdkPlatform
   Future<void> openDramaDrawFeed({
     required PangolinDramaDrawOptions options,
   }) async {}
+
+  @override
+  Future<void> pauseEmbeddedDramaDrawFeed() async {}
+
+  @override
+  Future<void> resumeEmbeddedDramaDrawFeed() async {}
 }
 
 void main() {

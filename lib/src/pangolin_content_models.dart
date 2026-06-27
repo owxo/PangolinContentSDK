@@ -2,6 +2,7 @@
 class PangolinContentConfig {
   const PangolinContentConfig({
     required this.configFileName,
+    this.configFilePath,
     this.appId = '',
     this.adAppId,
     this.appName = 'pangolin_content_sdk',
@@ -33,8 +34,16 @@ class PangolinContentConfig {
   /// `app_id`; use `site_id` here when it differs from [appId].
   final String? adAppId;
 
-  /// SDK setting JSON file name placed in Android assets.
+  /// SDK setting JSON file name.
+  ///
+  /// Android reads it from app assets. iOS reads it from the main bundle.
   final String configFileName;
+
+  /// Runtime downloaded SDK setting JSON file path.
+  ///
+  /// Android keeps [configFileName] as the SDK-facing config name and uses this
+  /// path to preload the dynamic SDK settings before startup.
+  final String? configFilePath;
 
   /// App name passed to Pangolin ad SDK.
   final String appName;
@@ -64,6 +73,7 @@ class PangolinContentConfig {
       'appId': appId,
       'adAppId': adAppId,
       'configFileName': configFileName,
+      'configFilePath': configFilePath,
       'appName': appName,
       'debug': debug,
       'initializeAdSdk': initializeAdSdk,
@@ -446,7 +456,7 @@ class PangolinDramaDrawOptions {
     this.titleRightMargin,
     this.titleTopMargin,
     this.dramaFree = 5,
-    this.detailFreeSet = -1,
+    this.detailFreeSet = 5,
     this.detailLockSet = -1,
     this.detailHideBack = false,
     this.detailHideTopInfo = false,

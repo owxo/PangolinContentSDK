@@ -1,21 +1,22 @@
 # pangolin_content_sdk
 
-这是一个给 Flutter 使用的穿山甲内容 SDK 封装插件，当前主要支持 Android 短剧能力。
+这是一个给 Flutter 使用的穿山甲内容 SDK 封装插件，当前支持 Android 和 iOS 短剧能力。
 
 这个插件适合这种场景：你的 Flutter App 自己做短剧首页、列表、分类、搜索等页面，但内容请求、短剧播放页、溜溜滑页面交给穿山甲原生 SDK 来处理。
 
 ## 当前支持范围
 
-- 仅支持 Android。
+- 支持 Android 和 iOS。
 - 初始化穿山甲广告 SDK 和穿山甲内容 SDK。
 - 支持请求短剧列表、推荐短剧、分类、搜索结果、观看历史、收藏。
 - 支持从 Flutter 打开穿山甲原生短剧播放页。
 - 支持从 Flutter 打开穿山甲原生溜溜滑/滑滑流页面。
+- 支持内嵌溜溜滑/滑滑流原生视图。
 - 支持第三方激励广告接入短剧解锁流程。
 - 支持穿山甲解锁记录绑定登录接口。
 - 提供一个 Flutter 示例 App，里面有 Flutter 写的短剧列表页面。
 
-暂时还不包含：iOS、短故事、短视频、pub.dev 自动发布流程。
+暂时还不包含：短故事、短视频、pub.dev 自动发布流程。
 
 ## 平台要求
 
@@ -23,6 +24,8 @@
 - AndroidX 需要开启。
 - 如果你的项目还依赖旧版 support 库，需要开启 Jetifier。
 - 建议使用真实 Android 手机测试。穿山甲内容 SDK demo 官方也说明不支持只用模拟器完整验证。
+- iOS 最低支持 `iOS 12.0`。
+- iOS 建议使用真机测试，模拟器可能无法完整验证播放、广告和部分设备权限链路。
 
 ## Android 接入
 
@@ -77,6 +80,71 @@ android {
 ```
 
 如果你需要和官方 demo 的网络配置完全一致，可以在 App 的 manifest 里增加 `networkSecurityConfig`，并允许你的 SDK 配置文件里使用到的穿山甲/AppLog 域名。
+
+## iOS 接入
+
+iOS 需要在你的 App 的 `ios/Podfile` 顶部加入穿山甲和火山引擎 CocoaPods 源：
+
+```ruby
+source 'https://github.com/CocoaPods/Specs.git'
+source 'https://github.com/volcengine/volcengine-specs.git'
+```
+
+在 `target 'Runner' do` 里建议使用静态 framework：
+
+```ruby
+use_frameworks! :linkage => :static
+```
+
+插件的 podspec 已经声明了下面这些依赖，正常情况下宿主项目不用重复写：
+
+```ruby
+pod 'Ads-CN-Beta', '7.2.0.6', :subspecs => ['BUAdSDK', 'CSJMediation-Only', 'BUAdLive']
+pod 'TTSDKFramework', '1.46.2.7-premium', :subspecs => ['LivePull', 'Player-SR']
+pod 'PangrowthX', '2.9.0.5', :subspecs => ['shortplay-beta']
+```
+
+如果你的项目里已经手动接入过这些 Pod，请保持版本一致，避免出现重复依赖或符号冲突。
+
+把穿山甲后台下载的 iOS SDK 配置 JSON 放到你的 App 工程，例如：
+
+```text
+ios/Runner/SDK_Setting_xxx.json
+```
+
+然后在 Xcode 里确认这个 JSON 已加入 `Runner` target 的 `Copy Bundle Resources`。如果没有加入，iOS 初始化会提示找不到配置文件。
+
+在 `ios/Runner/Info.plist` 里配置 AppLog URL Scheme：
+
+```xml
+<key>CFBundleURLTypes</key>
+<array>
+  <dict>
+    <key>CFBundleURLSchemes</key>
+    <array>
+      <string>rangersapplog.your_scheme</string>
+    </array>
+  </dict>
+</array>
+```
+
+如果要请求 IDFA/ATT 权限，还需要：
+
+```xml
+<key>NSUserTrackingUsageDescription</key>
+<string>用于广告归因和内容推荐优化</string>
+```
+
+请确认 iOS App 的 Bundle ID 和 SDK 配置 JSON 里的 `license_config.BundleId` 一致。例如你的 Bundle ID 是 `com.example.app`，JSON 里也必须包含同一个 Bundle ID，否则内容 SDK 会提示配置异常。
+
+安装 iOS Pods：
+
+```sh
+cd ios
+pod install
+```
+
+如果 CocoaPods 提示找不到 `PangrowthX`、`Ads-CN-Beta` 或 `TTSDKFramework`，先确认 `Podfile` 顶部已经加入 `https://github.com/volcengine/volcengine-specs.git`。
 
 ## Flutter 使用
 
@@ -189,7 +257,7 @@ await PangolinContentSdk.instance.openDramaDrawFeed(
 
 溜溜滑页面和里面的播放器 UI 是穿山甲原生 SDK 管理的。Flutter 可以控制 SDK 暴露出来的参数，但不能完全替换穿山甲内部播放器页面。
 
-插件默认 `dramaFree` 为 `5`，也就是溜溜滑短剧流默认前 5 集免费。你也可以在 `PangolinDramaDrawOptions` 里改成其他集数。
+插件默认 `dramaFree` 和 `detailFreeSet` 都为 `5`，也就是溜溜滑短剧流和进入后的播放页默认前 5 集免费。你也可以在 `PangolinDramaDrawOptions` 里改成其他集数。
 
 `hideDramaInfo: false` 会显示溜溜滑底部短剧信息；如果设置成 `true`，底部短剧信息会被隐藏。
 
@@ -309,7 +377,9 @@ final loggedIn = await PangolinContentSdk.instance.isLoggedIn();
 
 ## 本地示例
 
-示例 App 会从下面这个文件读取本地 Android 包名等配置：
+当前仓库里的示例 App 已包含 Android 和 iOS 工程。iOS 示例已配置 Bundle ID、AppLog URL Scheme、SDK 配置 JSON 资源引用和 CocoaPods 依赖。
+
+Android 示例会从下面这个文件读取本地 Android 包名等配置：
 
 ```text
 example/android/pangolin-local.properties
@@ -323,6 +393,25 @@ example/android/pangolin-local.properties
 cd example
 flutter run
 ```
+
+在真实 iPhone 上运行 iOS 示例：
+
+```sh
+cd example
+flutter run -d your_iphone_device_id
+```
+
+iOS 模拟器限制：当前接入的 `TTSDKFramework/Player-SR 1.46.2.7-premium` 里 `TTSDKPlayer.xcframework` 只有真机 `ios-arm64` 切片，没有 `ios-x86_64-simulator` 或 `ios-arm64-simulator` 切片。因此 iOS 示例需要真机运行，模拟器会在 Xcode 构建阶段失败。
+
+iOS 示例默认使用：
+
+- AppLog AppID：`925856`
+- 穿山甲 site_id：`5554773`
+- SDK 配置文件：`SDK_Setting_5554773.json`
+- Bundle ID：`com.szl.scmc`
+- AppLog URL Scheme：`rangersapplog.d9350a5c8f9cd47e`
+
+本地的 `example/ios/Runner/SDK_Setting_5554773.json` 会被 git 忽略。换成你自己的 iOS 应用时，需要替换 JSON，并确认 Xcode 里已加入 `Runner` target 的 `Copy Bundle Resources`。
 
 你可以用 `--dart-define` 给示例传入初始化信息：
 

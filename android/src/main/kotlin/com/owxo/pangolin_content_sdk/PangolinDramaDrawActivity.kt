@@ -1,6 +1,8 @@
 package com.owxo.pangolin_content_sdk
 
+import android.app.Activity
 import android.app.AlertDialog
+import android.content.ContextWrapper
 import android.os.Bundle
 import android.os.SystemClock
 import android.view.View
@@ -166,26 +168,31 @@ class PangolinDramaDrawActivity : FragmentActivity() {
     }
 
     private fun buildDetailConfig(): DJXDramaDetailConfig {
-        val freeSet = intent.getIntExtra(EXTRA_DETAIL_FREE_SET, -1)
+        val freeSet = intent.getIntExtra(EXTRA_DETAIL_FREE_SET, 5)
         val lockSet = intent.getIntExtra(EXTRA_DETAIL_LOCK_SET, -1)
         val enableContinuousUnlock = intent.getBooleanExtra(EXTRA_ENABLE_CONTINUOUS_UNLOCK, false)
+        val useCustomRewardAd = intent.getBooleanExtra(EXTRA_DETAIL_USE_CUSTOM_REWARD_AD, false)
         val unlockListener = buildUnlockListener(
             lockSet = lockSet,
             enableContinuousUnlock = enableContinuousUnlock,
-            useCustomRewardAd = intent.getBooleanExtra(EXTRA_DETAIL_USE_CUSTOM_REWARD_AD, false),
+            useCustomRewardAd = useCustomRewardAd,
         )
         return DJXDramaDetailConfig.obtain(
-            DJXDramaUnlockAdMode.MODE_COMMON,
+            if (useCustomRewardAd) {
+                DJXDramaUnlockAdMode.MODE_SPECIFIC
+            } else {
+                DJXDramaUnlockAdMode.MODE_COMMON
+            },
             freeSet,
             unlockListener,
         ).apply {
             hideBack(
                 intent.getBooleanExtra(EXTRA_DETAIL_HIDE_BACK, false),
-                View.OnClickListener { finish() },
+                View.OnClickListener { view -> handleDetailBackClick(view) },
             )
             hideTopInfo(intent.getBooleanExtra(EXTRA_DETAIL_HIDE_TOP_INFO, false))
             hideBottomInfo(intent.getBooleanExtra(EXTRA_DETAIL_HIDE_BOTTOM_INFO, false))
-            hideRewardDialog(intent.getBooleanExtra(EXTRA_DETAIL_HIDE_REWARD_DIALOG, false))
+            hideRewardDialog(useCustomRewardAd || intent.getBooleanExtra(EXTRA_DETAIL_HIDE_REWARD_DIALOG, false))
             hideMore(intent.getBooleanExtra(EXTRA_DETAIL_HIDE_MORE, false))
             hideCellularToast(intent.getBooleanExtra(EXTRA_DETAIL_HIDE_CELLULAR_TOAST, false))
             infiniteScrollEnabled(intent.getBooleanExtra(EXTRA_DETAIL_INFINITE_SCROLL_ENABLED, true))
@@ -206,6 +213,20 @@ class PangolinDramaDrawActivity : FragmentActivity() {
                 setIcpTipsBottomMargin(intent.getIntExtra(EXTRA_DETAIL_ICP_TIPS_BOTTOM_MARGIN, 0))
             }
         }
+    }
+
+    private fun handleDetailBackClick(view: View) {
+        val sourceActivity = view.ownerActivity()
+        if (sourceActivity != null && sourceActivity !== this) {
+            sourceActivity.finish()
+            return
+        }
+        val currentWidget = widget
+        if (currentWidget != null) {
+            currentWidget.backRefresh()
+            return
+        }
+        finish()
     }
 
     private fun buildUnlockListener(
@@ -235,7 +256,12 @@ class PangolinDramaDrawActivity : FragmentActivity() {
                     drama: DJXDrama,
                     callback: IDJXDramaUnlockListener.CustomAdCallback,
                 ) {
-                    PangolinRewardAdBridge.requestRewardAd("draw_detail", drama, callback)
+                    PangolinRewardAdBridge.requestRewardAd(
+                        "draw_detail",
+                        drama,
+                        callback,
+                        this@PangolinDramaDrawActivity,
+                    )
                 }
             }
         }
@@ -353,5 +379,16 @@ class PangolinDramaDrawActivity : FragmentActivity() {
         defaultValue: Boolean,
     ): Boolean {
         return if (hasExtra(name)) getBooleanExtra(name, defaultValue) else defaultValue
+    }
+
+    private fun View.ownerActivity(): Activity? {
+        var currentContext = context
+        while (currentContext is ContextWrapper) {
+            if (currentContext is Activity) {
+                return currentContext
+            }
+            currentContext = currentContext.baseContext
+        }
+        return currentContext as? Activity
     }
 }

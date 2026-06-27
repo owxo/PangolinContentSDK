@@ -1,6 +1,6 @@
 name: pangolin_content_sdk
-description: Flutter wrapper for Pangolin Content SDK drama APIs on Android.
-version: 1.0.0
+description: Flutter wrapper for Pangolin Content SDK drama APIs on Android and iOS.
+version: 1.0.1
 repository: https://github.com/owxo/PangolinContentSDK
 
 environment:
@@ -36,6 +36,8 @@ flutter:
     platforms:
       android:
         package: com.owxo.pangolin_content_sdk
+        pluginClass: PangolinContentSdkPlugin
+      ios:
         pluginClass: PangolinContentSdkPlugin
 
   # To add assets to your plugin package, add an assets section, like this:

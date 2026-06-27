@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:pangolin_content_sdk/pangolin_content_sdk.dart';
 
@@ -11,6 +12,12 @@ const _defaultConfigFile = String.fromEnvironment(
   'PANGLE_CONFIG_FILE',
   defaultValue: '',
 );
+const _androidAppId = '584358';
+const _androidAdAppId = '5468137';
+const _androidConfigFile = 'SDK_Setting_5468137.json';
+const _iosAppId = '925856';
+const _iosAdAppId = '5554773';
+const _iosConfigFile = 'SDK_Setting_5554773.json';
 const _autoInitialize = bool.fromEnvironment('PANGOLIN_AUTO_INIT');
 const _disableTTPlayer = bool.fromEnvironment(
   'PANGOLIN_DISABLE_TT_PLAYER',
@@ -54,9 +61,9 @@ class DramaWorkbench extends StatefulWidget {
 
 class _DramaWorkbenchState extends State<DramaWorkbench> {
   final _sdk = PangolinContentSdk.instance;
-  final _appIdController = TextEditingController(text: _defaultAppId);
-  final _adAppIdController = TextEditingController(text: _defaultAdAppId);
-  final _configController = TextEditingController(text: _defaultConfigFile);
+  final _appIdController = TextEditingController(text: _initialAppId);
+  final _adAppIdController = TextEditingController(text: _initialAdAppId);
+  final _configController = TextEditingController(text: _initialConfigFile);
   final _searchController = TextEditingController();
   final _categoryController = TextEditingController();
 
@@ -93,8 +100,15 @@ class _DramaWorkbenchState extends State<DramaWorkbench> {
     try {
       await task();
     } on PlatformException catch (error) {
+      // Keep a plain print in release builds so devicectl --console can show it.
+      // ignore: avoid_print
+      print(
+        'Pangolin example PlatformException: ${error.code} ${error.message}',
+      );
       setState(() => _status = '${error.code}: ${error.message ?? ''}');
     } catch (error) {
+      // ignore: avoid_print
+      print('Pangolin example error: $error');
       setState(() => _status = error.toString());
     } finally {
       if (mounted) {
@@ -105,7 +119,7 @@ class _DramaWorkbenchState extends State<DramaWorkbench> {
 
   Future<void> _initialize() {
     return _run(() async {
-      final ready = await _prepareAndroidEnvironment();
+      final ready = await _prepareEnvironment();
       if (!ready) return;
 
       final result = await _sdk.initialize(
@@ -118,6 +132,11 @@ class _DramaWorkbenchState extends State<DramaWorkbench> {
           disableTTPlayer: _disableTTPlayer,
         ),
       );
+      // ignore: avoid_print
+      print(
+        'Pangolin initialize result: success=${result.success}, '
+        'code=${result.code}, message=${result.message}',
+      );
       setState(() {
         _started = result.success;
         _status = result.success
@@ -127,13 +146,24 @@ class _DramaWorkbenchState extends State<DramaWorkbench> {
     });
   }
 
-  Future<bool> _prepareAndroidEnvironment() async {
+  Future<bool> _prepareEnvironment() async {
     setState(() => _status = '正在请求 SDK 推荐权限...');
     final permissions = await _sdk.requestRecommendedPermissions();
     final deniedPermissions = permissions.entries
         .where((entry) => !entry.value)
         .map((entry) => _permissionLabel(entry.key))
         .toList();
+
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      if (deniedPermissions.isNotEmpty) {
+        setState(() {
+          _status = 'iOS 权限未全部授予：${deniedPermissions.join('、')}。继续尝试初始化...';
+        });
+      } else {
+        setState(() => _status = 'iOS 权限检查完成，正在初始化 SDK...');
+      }
+      return true;
+    }
 
     setState(() => _status = '正在检测穿山甲服务连通性...');
     final checks = await _sdk.checkNetworkAccess(timeoutMillis: 5000);
@@ -195,7 +225,10 @@ class _DramaWorkbenchState extends State<DramaWorkbench> {
     if (lowerMessage.contains('socketexception') ||
         lowerMessage.contains('connection reset') ||
         lowerMessage.contains('failed to connect') ||
-        lowerMessage.contains('connectexception')) {
+        lowerMessage.contains('connectexception') ||
+        lowerMessage.contains('timed out') ||
+        lowerMessage.contains('timeout') ||
+        lowerMessage.contains('-1001')) {
       return '$rawMessage\n\n已完成广告 SDK 初始化，但内容 SDK 拉取 token 时联网失败。请先切换网络、关闭代理/VPN、换手机热点或移动网络后重试。';
     }
     if (lowerMessage.contains('libpangleflipped.so') ||
@@ -353,6 +386,33 @@ class _DramaWorkbenchState extends State<DramaWorkbench> {
       ),
     );
   }
+}
+
+String get _initialAppId {
+  if (_defaultAppId.isNotEmpty) return _defaultAppId;
+  return switch (defaultTargetPlatform) {
+    TargetPlatform.iOS => _iosAppId,
+    TargetPlatform.android => _androidAppId,
+    _ => '',
+  };
+}
+
+String get _initialAdAppId {
+  if (_defaultAdAppId.isNotEmpty) return _defaultAdAppId;
+  return switch (defaultTargetPlatform) {
+    TargetPlatform.iOS => _iosAdAppId,
+    TargetPlatform.android => _androidAdAppId,
+    _ => '',
+  };
+}
+
+String get _initialConfigFile {
+  if (_defaultConfigFile.isNotEmpty) return _defaultConfigFile;
+  return switch (defaultTargetPlatform) {
+    TargetPlatform.iOS => _iosConfigFile,
+    TargetPlatform.android => _androidConfigFile,
+    _ => '',
+  };
 }
 
 class _ConfigPanel extends StatelessWidget {

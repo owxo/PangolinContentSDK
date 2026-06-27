@@ -1,5 +1,9 @@
 library;
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
+
 import 'pangolin_content_sdk_platform_interface.dart';
 import 'src/pangolin_content_models.dart';
 
@@ -194,5 +198,45 @@ class PangolinContentSdk {
     return PangolinContentSdkPlatform.instance.openDramaDrawFeed(
       options: options,
     );
+  }
+
+  Future<void> pauseEmbeddedDramaDrawFeed() {
+    return PangolinContentSdkPlatform.instance.pauseEmbeddedDramaDrawFeed();
+  }
+
+  Future<void> resumeEmbeddedDramaDrawFeed() {
+    return PangolinContentSdkPlatform.instance.resumeEmbeddedDramaDrawFeed();
+  }
+}
+
+class PangolinDramaDrawFeedView extends StatelessWidget {
+  const PangolinDramaDrawFeedView({
+    super.key,
+    this.options = const PangolinDramaDrawOptions(),
+  });
+
+  static const String viewType = 'pangolin_content_sdk/drama_draw_feed';
+
+  final PangolinDramaDrawOptions options;
+
+  @override
+  Widget build(BuildContext context) {
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      return AndroidView(
+        viewType: viewType,
+        creationParams: options.toMap(),
+        creationParamsCodec: const StandardMessageCodec(),
+      );
+    }
+
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      return UiKitView(
+        viewType: viewType,
+        creationParams: options.toMap(),
+        creationParamsCodec: const StandardMessageCodec(),
+      );
+    }
+
+    return const SizedBox.shrink();
   }
 }

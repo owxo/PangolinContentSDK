@@ -1,0 +1,175 @@
+PODS:
+  - Ads-CN-Beta/BUAdLive (7.2.0.6)
+  - Ads-CN-Beta/BUAdSDK (7.2.0.6)
+  - Ads-CN-Beta/CSJMediation-Only (7.2.0.6):
+    - Ads-CN-Beta/BUAdSDK
+  - Flutter (1.0.0)
+  - integration_test (0.0.1):
+    - Flutter
+  - pangolin_content_sdk (1.0.1):
+    - Ads-CN-Beta/BUAdLive (= 7.2.0.6)
+    - Ads-CN-Beta/BUAdSDK (= 7.2.0.6)
+    - Ads-CN-Beta/CSJMediation-Only (= 7.2.0.6)
+    - Flutter
+    - PangrowthX/shortplay-beta (= 2.9.0.5)
+    - TTSDKFramework/LivePull (= 1.46.2.7-premium)
+    - TTSDKFramework/Player-SR (= 1.46.2.7-premium)
+  - PangrowthDJX (2.9.0.5):
+    - PGXToolbox (= 2.9.0.5)
+  - PangrowthX/shortplay-beta (2.9.0.5):
+    - Ads-CN-Beta/BUAdSDK (>= 5.8.0.7)
+    - PangrowthDJX (= 2.9.0.5)
+    - PGXToolbox (= 2.9.0.5)
+    - TTSDKFramework/Player-SR (>= 1.42.3.4-premium)
+  - PGXToolbox (2.9.0.5):
+    - RangersAPM/CN (>= 3.10.6)
+    - RangersAPM/Crash (>= 3.10.6)
+    - RangersAPM/EventMonitor (>= 3.10.6)
+    - RangersAppLog/Host/CN (>= 6.16.3)
+    - RangersAppLog/Log (>= 6.16.3)
+  - RangersAPM/Above (5.2.15)
+  - RangersAPM/CN (5.2.15):
+    - RangersAPM/Core
+    - RangersAPM/Public
+  - RangersAPM/Core (5.2.15):
+    - RangersAPM/HMDLite
+  - RangersAPM/Crash (5.2.15):
+    - RangersAPM/Core
+    - RangersAPM/HMD
+    - RangersAPM/Public
+    - RangersAPM/SessionTracker
+    - RangersAPM/Zip
+  - RangersAPM/EventMonitor (5.2.15):
+    - RangersAPM/Core
+    - RangersAPM/HMD
+    - RangersAPM/Public
+  - RangersAPM/HMD (5.2.15):
+    - RangersAPM/Core
+    - RangersAPM/Public
+  - RangersAPM/HMDLite (5.2.15)
+  - RangersAPM/Public (5.2.15):
+    - RangersAPM/Above
+    - RangersAPM/Core
+    - RangersAPM/HMDLite
+    - RangersAPM/Zyone
+  - RangersAPM/SessionTracker (5.2.15):
+    - RangersAPM/Core
+    - RangersAPM/HMD
+    - RangersAPM/Public
+  - RangersAPM/Zip (5.2.15)
+  - RangersAPM/Zyone (5.2.15)
+  - RangersAppLog/Core (6.16.9):
+    - RangersAppLog/Encryptor/VOLC
+  - RangersAppLog/Encryptor/VOLC (6.16.9)
+  - RangersAppLog/Host/CN (6.16.9):
+    - RangersAppLog/Core
+  - RangersAppLog/Log (6.16.9):
+    - RangersAppLog/Core
+  - TTSDKFramework/BMF (1.46.2.7-premium):
+    - TTSDKFramework/Core
+  - TTSDKFramework/Core (1.46.2.7-premium):
+    - RangersAppLog/Core (~> 6.16.8)
+    - RangersAppLog/Host/CN (~> 6.16.8)
+  - TTSDKFramework/HttpDNS (1.46.2.7-premium)
+  - TTSDKFramework/LiveBase (1.46.2.7-premium):
+    - TTSDKFramework/Core
+    - TTSDKFramework/Reachability
+  - TTSDKFramework/LivePlayer/Base (1.46.2.7-premium):
+    - TTSDKFramework/Core
+    - TTSDKFramework/LiveBase
+    - TTSDKFramework/Reachability
+  - TTSDKFramework/LivePlayer/Normal (1.46.2.7-premium):
+    - TTSDKFramework/LivePlayer/Base
+    - TTSDKFramework/PlayerCore/Normal
+  - TTSDKFramework/LivePull (1.46.2.7-premium):
+    - TTSDKFramework/LivePlayer/Normal
+    - TTSDKFramework/LivePull-BMF
+    - TTSDKFramework/LivePull-VolcLog
+    - TTSDKFramework/Quic/Pull
+    - TTSDKFramework/Strategy/Pull
+  - TTSDKFramework/LivePull-BMF (1.46.2.7-premium):
+    - TTSDKFramework/BMF
+  - TTSDKFramework/LivePull-VolcLog (1.46.2.7-premium):
+    - TTSDKFramework/VolcLog
+  - TTSDKFramework/Player (1.46.2.7-premium):
+    - TTSDKFramework/Core
+    - TTSDKFramework/HttpDNS
+    - TTSDKFramework/PlayerCore/Normal
+    - TTSDKFramework/Reachability
+    - TTSDKFramework/TopSignature
+    - TTSDKFramework/VCN
+    - TTSDKFramework/VolcLog
+  - TTSDKFramework/Player-SR (1.46.2.7-premium):
+    - TTSDKFramework/BMF
+    - TTSDKFramework/Player
+  - TTSDKFramework/PlayerCore/Base (1.46.2.7-premium):
+    - TTSDKFramework/Core
+    - TTSDKFramework/Tools
+  - TTSDKFramework/PlayerCore/Normal (1.46.2.7-premium):
+    - TTSDKFramework/PlayerCore/Base
+    - TTSDKFramework/TTFFmpeg/Normal
+    - TTSDKFramework/VideoProcessor
+  - TTSDKFramework/Quic/Core (1.46.2.7-premium):
+    - TTSDKFramework/Core
+    - TTSDKFramework/SSL
+  - TTSDKFramework/Quic/Pull (1.46.2.7-premium):
+    - TTSDKFramework/Quic/Core
+  - TTSDKFramework/Reachability (1.46.2.7-premium)
+  - TTSDKFramework/SSL (1.46.2.7-premium)
+  - TTSDKFramework/Strategy/Core (1.46.2.7-premium):
+    - TTSDKFramework/LiveBase
+    - TTSDKFramework/Reachability
+  - TTSDKFramework/Strategy/Pull (1.46.2.7-premium):
+    - TTSDKFramework/LivePlayer/Normal
+    - TTSDKFramework/Strategy/Core
+  - TTSDKFramework/Tools (1.46.2.7-premium):
+    - TTSDKFramework/SSL
+  - TTSDKFramework/TopSignature (1.46.2.7-premium)
+  - TTSDKFramework/TTFFmpeg/Base (1.46.2.7-premium):
+    - TTSDKFramework/Tools
+  - TTSDKFramework/TTFFmpeg/Normal (1.46.2.7-premium):
+    - TTSDKFramework/TTFFmpeg/Base
+  - TTSDKFramework/VCN (1.46.2.7-premium)
+  - TTSDKFramework/VideoProcessor (1.46.2.7-premium)
+  - TTSDKFramework/VolcLog (1.46.2.7-premium):
+    - TTSDKFramework/SSL
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - integration_test (from `.symlinks/plugins/integration_test/ios`)
+  - pangolin_content_sdk (from `.symlinks/plugins/pangolin_content_sdk/ios`)
+
+SPEC REPOS:
+  https://github.com/CocoaPods/Specs.git:
+    - Ads-CN-Beta
+  https://github.com/volcengine/volcengine-specs.git:
+    - PangrowthDJX
+    - PangrowthX
+    - PGXToolbox
+    - RangersAPM
+    - RangersAppLog
+    - TTSDKFramework
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  integration_test:
+    :path: ".symlinks/plugins/integration_test/ios"
+  pangolin_content_sdk:
+    :path: ".symlinks/plugins/pangolin_content_sdk/ios"
+
+SPEC CHECKSUMS:
+  Ads-CN-Beta: adecae709f41cc82ecb976597a29ee610bdf82ad
+  Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
+  integration_test: 4a889634ef21a45d28d50d622cf412dc6d9f586e
+  pangolin_content_sdk: 54d2f97d2bafb9bb696e9d50bb910a48274971b2
+  PangrowthDJX: ba1ce9e00664eb885cf5c631e6ee3a06409e5a7c
+  PangrowthX: aba0c8e80909c631a81f9524524f16c190bd7c8a
+  PGXToolbox: 4161d9263f3ecd255164590850432227aa4c261b
+  RangersAPM: bdb581ae6ff6d9b5db5b245d20589a64046f474e
+  RangersAppLog: d4fa640a806e5fef583b07bea2f610684e81161e
+  TTSDKFramework: 2aa51efbc80c92f0dff51ea3ecdc18047ac90710
+
+PODFILE CHECKSUM: 4dfc5cdee4bc906b9127014db40330c1ec0880c6
+
+COCOAPODS: 1.16.2

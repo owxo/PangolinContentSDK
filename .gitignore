@@ -36,6 +36,16 @@ migrate_working_dir/
 *.aab
 *.apks
 
+# iOS generated files.
+**/Pods/
+**/.symlinks/
+**/Flutter/Flutter.framework
+**/Flutter/Flutter.podspec
+**/Flutter/Generated.xcconfig
+**/Flutter/ephemeral/
+**/DerivedData/
+
 # Local Pangolin Content SDK demo config.
 example/android/pangolin-local.properties
 example/android/app/src/main/assets/SDK_Setting_*.json
+example/ios/Runner/SDK_Setting_*.json

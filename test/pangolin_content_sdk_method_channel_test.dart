@@ -21,8 +21,9 @@ void main() {
             case 'isStarted':
               return true;
             case 'requestRecommendedPermissions':
-              return <String, bool>{
-                'android.permission.READ_PHONE_STATE': true,
+              return <String, Object?>{
+                'android.permission.READ_PHONE_STATE': 1,
+                'appTrackingTransparency': 0,
               };
             case 'checkNetworkAccess':
               return <Map<String, Object?>>[
@@ -79,6 +80,7 @@ void main() {
     final permissions = await platform.requestRecommendedPermissions();
 
     expect(permissions['android.permission.READ_PHONE_STATE'], isTrue);
+    expect(permissions['appTrackingTransparency'], isFalse);
   });
 
   test('checkNetworkAccess', () async {

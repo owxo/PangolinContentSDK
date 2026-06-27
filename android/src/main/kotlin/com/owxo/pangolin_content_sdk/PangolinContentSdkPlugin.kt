@@ -8,6 +8,9 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import com.bytedance.sdk.djx.base.dynamic.DynamicManager
+import com.bytedance.sdk.djx.base.dynamic.DynamicModel
+import com.bytedance.sdk.djx.base.dynamic.api.DynamicApi
 import com.bytedance.sdk.djx.DJXSdk
 import com.bytedance.sdk.djx.DJXSdkConfig
 import com.bytedance.sdk.djx.IDJXPrivacyController
@@ -30,6 +33,7 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry
+import java.io.File
 import java.lang.reflect.Modifier
 import java.net.InetSocketAddress
 import java.net.Socket
@@ -55,6 +59,10 @@ class PangolinContentSdkPlugin :
         application = binding.applicationContext.applicationContext as Application
         channel = MethodChannel(binding.binaryMessenger, "pangolin_content_sdk")
         channel.setMethodCallHandler(this)
+        binding.platformViewRegistry.registerViewFactory(
+            "pangolin_content_sdk/drama_draw_feed",
+            PangolinDramaDrawPlatformViewFactory { activity },
+        )
         PangolinRewardAdBridge.attach(channel)
     }
 
@@ -84,6 +92,14 @@ class PangolinContentSdkPlugin :
             "verifyDramaParams" -> verifyDramaParams(call, result)
             "openDramaDetail" -> openDramaDetail(call, result)
             "openDramaDrawFeed" -> openDramaDrawFeed(call, result)
+            "pauseEmbeddedDramaDrawFeed" -> {
+                PangolinDramaDrawPlatformViewRegistry.pauseAll()
+                result.success(null)
+            }
+            "resumeEmbeddedDramaDrawFeed" -> {
+                PangolinDramaDrawPlatformViewRegistry.resumeAll()
+                result.success(null)
+            }
             else -> result.notImplemented()
         }
     }
@@ -209,7 +225,8 @@ class PangolinContentSdkPlugin :
         val adAppId = args.string("adAppId")?.takeIf { it.isNotBlank() }
             ?: readManifestString("com.owxo.pangolin_content_sdk.PANGLE_AD_APP_ID")
             ?: appId
-        val configFileName = args.string("configFileName")
+        val configFileName = args.string("configFileName")?.trim()
+        val configFilePath = args.string("configFilePath")?.trim()?.takeIf { it.isNotBlank() }
         if (appId.isNullOrBlank()) {
             result.errorOnMain("pangolin_invalid_app_id", "appId is required.", null)
             return
@@ -222,7 +239,19 @@ class PangolinContentSdkPlugin :
             result.errorOnMain("pangolin_invalid_config", "configFileName is required.", null)
             return
         }
-        val configIssue = validateSdkSettingFile(configFileName, appId, adAppId)
+        val settingJson = try {
+            readSdkSettingJson(configFileName, configFilePath)
+        } catch (error: Throwable) {
+            result.successOnMain(
+                mapOf(
+                    "success" to false,
+                    "code" to CONFIG_VALIDATION_ERROR_CODE,
+                    "message" to "无法读取 SDK 配置文件 ${configFilePath ?: configFileName}：${error.message.orEmpty()}",
+                ),
+            )
+            return
+        }
+        val configIssue = validateSdkSettingJson(settingJson, appId, adAppId)
         if (configIssue != null) {
             result.successOnMain(
                 mapOf(
@@ -232,6 +261,19 @@ class PangolinContentSdkPlugin :
                 ),
             )
             return
+        }
+        if (configFilePath != null) {
+            val preloadIssue = preloadDynamicSettings(settingJson)
+            if (preloadIssue != null) {
+                result.successOnMain(
+                    mapOf(
+                        "success" to false,
+                        "code" to CONFIG_VALIDATION_ERROR_CODE,
+                        "message" to preloadIssue,
+                    ),
+                )
+                return
+            }
         }
 
         teenagerMode = args.boolean("teenagerMode", false)
@@ -639,7 +681,7 @@ class PangolinContentSdkPlugin :
         intent.putExtra(PangolinDramaDrawActivity.EXTRA_DRAMA_FREE, options.int("dramaFree", 5))
         intent.putExtra(
             PangolinDramaDrawActivity.EXTRA_DETAIL_FREE_SET,
-            options.int("detailFreeSet", -1),
+            options.int("detailFreeSet", 5),
         )
         intent.putExtra(
             PangolinDramaDrawActivity.EXTRA_DETAIL_LOCK_SET,
@@ -761,18 +803,23 @@ class PangolinContentSdkPlugin :
         return true
     }
 
-    private fun validateSdkSettingFile(
+    private fun readSdkSettingJson(
         configFileName: String,
+        configFilePath: String?,
+    ): JSONObject {
+        val raw = if (configFilePath != null) {
+            File(configFilePath).readText(Charsets.UTF_8)
+        } else {
+            application.assets.open(configFileName).bufferedReader().use { it.readText() }
+        }
+        return JSONObject(raw)
+    }
+
+    private fun validateSdkSettingJson(
+        json: JSONObject,
         appId: String,
         adAppId: String,
     ): String? {
-        val json = try {
-            val raw = application.assets.open(configFileName).bufferedReader().use { it.readText() }
-            JSONObject(raw)
-        } catch (error: Throwable) {
-            return "无法读取 SDK 配置文件 $configFileName：${error.message.orEmpty()}"
-        }
-
         val init = json.optJSONObject("init")
             ?: return "SDK 配置文件缺少 init 节点，请重新下载配置文件。"
         val configAppId = init.optString("app_id")
@@ -804,6 +851,31 @@ class PangolinContentSdkPlugin :
             return "SDK 配置文件 license_config 的包名是 ${packageNames.joinToString()}，当前包名是 ${application.packageName}。请重新录入当前包名并下载配置文件。"
         }
         return null
+    }
+
+    private fun preloadDynamicSettings(json: JSONObject): String? {
+        return try {
+            val model = DynamicApi.parseModel(json)
+                ?: return "SDK 配置文件解析失败，请重新下载配置文件。"
+            checkDynamicLicense(model)
+            DynamicManager.getInstance().setDynamicModel(model)
+            null
+        } catch (error: Throwable) {
+            "SDK 配置文件预加载失败：${error.message.orEmpty()}"
+        }
+    }
+
+    private fun checkDynamicLicense(model: DynamicModel) {
+        val presenterClass = Class.forName("com.bytedance.sdk.djx.base.dynamic.DynamicPresenter")
+        val instance = presenterClass.getDeclaredMethod("getInstance").apply {
+            isAccessible = true
+        }.invoke(null)
+        presenterClass.getDeclaredMethod(
+            "checkLicense",
+            DynamicModel::class.java,
+        ).apply {
+            isAccessible = true
+        }.invoke(instance, model)
     }
 
     private fun recommendedPermissionStatus(): Map<String, Boolean> {

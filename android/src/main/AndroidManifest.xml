@@ -16,13 +16,15 @@
             android:exported="false"
             android:launchMode="singleTop"
             android:resizeableActivity="true"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:theme="@style/PangolinContentSdkNoTitleTheme" />
         <activity
             android:name=".PangolinDramaDrawActivity"
             android:configChanges="keyboard|screenSize|smallestScreenSize|screenLayout|orientation"
             android:exported="false"
             android:launchMode="singleTop"
             android:resizeableActivity="true"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:theme="@style/PangolinContentSdkNoTitleTheme" />
     </application>
 </manifest>
