@@ -4,6 +4,16 @@
 
 这个插件适合这种场景：你的 Flutter App 自己做短剧首页、列表、分类、搜索等页面，但内容请求、短剧播放页、溜溜滑页面交给穿山甲原生 SDK 来处理。
 
+## Commercial Support / 商业支持
+
+This repository remains open-source. Paid support is available for narrowly scoped Flutter-to-native integration, MethodChannel/PlatformView, Gradle/CocoaPods, and Android/iOS SDK problems.
+
+本仓库保持开源，同时提供边界明确的 Flutter 原生双端集成、MethodChannel/PlatformView、Gradle/CocoaPods 与 Android/iOS SDK 问题付费支持。
+
+See [COMMERCIAL_SUPPORT.md](./COMMERCIAL_SUPPORT.md) for scope, transparent pricing, required materials, and safety boundaries.
+
+服务范围、透明价格、所需材料和安全边界见 [COMMERCIAL_SUPPORT.md](./COMMERCIAL_SUPPORT.md)。
+
 ## 当前支持范围
 
 - 支持 Android 和 iOS。
